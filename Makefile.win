@@ -1,0 +1,9 @@
+CCFLAGS = /nologo /O2 /I include
+
+all: liblwjgl_lz4.dll
+
+liblwjgl_lz4.dll: src/xxhash.c src/lz4.c src/lz4frame.c src/lz4hc.c src/org_lwjgl_util_lz4_LZ4.c src/org_lwjgl_util_lz4_LZ4Frame.c src/org_lwjgl_util_lz4_LZ4HC.c
+	$(CC) $(CCFLAGS) /Fe:"liblwjgl_lz4.dll" /LD $**
+
+clean:
+	del /F /S /Q *.dll

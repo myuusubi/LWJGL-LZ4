@@ -44,12 +44,20 @@
 
 #define JNICALL
 
+#include <stdint.h>
+
 typedef int jint;
+
+/* Original Code:
 #ifdef _LP64
 typedef long jlong;
 #else
 typedef long long jlong;
 #endif
+*/
+
+// We are changing to uintptr_t for 32-bit platform support
+typedef uintptr_t jlong;
 
 typedef signed char jbyte;
 

@@ -1,3 +1,9 @@
-*.dylib
 *.so
+
+*.dylib
 *.DS_Store
+
+*.dll
+*.exp
+*.lib
+*.obj

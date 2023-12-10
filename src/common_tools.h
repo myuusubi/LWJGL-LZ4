@@ -4,7 +4,11 @@
  */
 #pragma once
 
+#ifdef _WIN32
+#include "WindowsConfig.h"
+#else
 #include "macOSConfig.h"
+#endif
 
 DISABLE_WARNINGS()
 #include <jni.h>
