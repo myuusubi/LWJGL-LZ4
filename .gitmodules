@@ -4,3 +4,6 @@
 [submodule "jdk"]
 	path = jdk
 	url = https://github.com/openjdk/jdk.git
+[submodule "lz4"]
+	path = lz4
+	url = https://github.com/lz4/lz4.git
