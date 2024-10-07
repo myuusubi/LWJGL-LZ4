@@ -1,3 +1,6 @@
 [submodule "lwjgl3"]
 	path = lwjgl3
 	url = https://github.com/LWJGL/lwjgl3.git
+[submodule "jdk"]
+	path = jdk
+	url = https://github.com/openjdk/jdk.git
