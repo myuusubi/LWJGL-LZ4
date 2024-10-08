@@ -1,0 +1,85 @@
+TOOLCHAIN=D:\android-ndk-r27b-windows\android-ndk-r27b\toolchains\llvm\prebuilt\windows-x86_64\bin
+
+CC_ARM64=aarch64-linux-android34-clang.cmd
+CC_ARMEABI=armv7a-linux-androideabi34-clang.cmd
+CC_X86_64=x86_64-linux-android34-clang.cmd
+CC_I686=i686-linux-android34-clang.cmd
+
+CCFLAGS = -O3 -Wall -Wextra -Wcast-qual  -I ./include
+
+SOURCES=src/xxhash.c src/lz4.c src/lz4frame.c src/lz4hc.c src/org_lwjgl_util_lz4_LZ4.c src/org_lwjgl_util_lz4_LZ4Frame.c src/org_lwjgl_util_lz4_LZ4HC.c
+
+all: android
+
+android: build/arm64-v8a/liblwjgl_lz4.so build/armeabi-v7a/liblwjgl_lz4.so build/x86/liblwjgl_lz4.so build/x86_64/liblwjgl_lz4.so
+
+# LZ4
+
+src/lz4.h: lwjgl3/modules/lwjgl/lz4/src/main/c/lz4.h
+	xcopy /o /x /y "lwjgl3\modules\lwjgl\lz4\src\main\c\lz4.h" "src\lz4.h"
+
+src/lz4.c: lwjgl3/modules/lwjgl/lz4/src/main/c/lz4.c src/lz4.h
+	xcopy /o /x /y "lwjgl3\modules\lwjgl\lz4\src\main\c\lz4.c" "src\lz4.c"
+
+src/lz4hc.h: lwjgl3/modules/lwjgl/lz4/src/main/c/lz4hc.h src/lz4.h
+	xcopy /o /x /y "lwjgl3\modules\lwjgl\lz4\src\main\c\lz4hc.h" "src\lz4hc.h"
+
+src/lz4hc.c: lwjgl3/modules/lwjgl/lz4/src/main/c/lz4hc.c src/lz4hc.h
+	xcopy /o /x /y "lwjgl3\modules\lwjgl\lz4\src\main\c\lz4hc.c" "src\lz4hc.c"
+
+src/xxhash.h: lz4/lib/xxhash.h
+	xcopy /o /x /y "lz4\lib\xxhash.h" "src\xxhash.h"
+
+src/xxhash.c: lz4/lib/xxhash.c
+	xcopy /o /x /y "lz4\lib\xxhash.c" "src\xxhash.c"
+
+src/lz4frame.h: lwjgl3/modules/lwjgl/lz4/src/main/c/lz4frame.h
+	xcopy /o /x /y "lwjgl3\modules\lwjgl\lz4\src\main\c\lz4frame.h" "src\lz4frame.h"
+
+src/lz4frame.c: lwjgl3/modules/lwjgl/lz4/src/main/c/lz4frame.c src/lz4frame.h src/lz4.h src/lz4hc.h src/xxhash.h
+	xcopy /o /x /y "lwjgl3\modules\lwjgl\lz4\src\main\c\lz4frame.c" "src\lz4frame.c"
+
+# JNI
+
+include/jni_md.h: jdk/src/java.base/unix/native/include/jni_md.h 
+	xcopy /o /x /y "jdk\src\java.base\unix\native\include\jni_md.h" "include\jni_md.h"
+
+include/jni.h: jdk/src/java.base/share/native/include/jni.h include/jni_md.h
+	xcopy /o /x /y "jdk\src\java.base\share\native\include\jni.h" "include\jni.h"
+
+# LWJGL
+
+src/LinuxConfig.h: lwjgl3/modules/lwjgl/core/src/main/c/linux/LinuxConfig.h
+	xcopy /o /x /y "lwjgl3\modules\lwjgl\core\src\main\c\linux\LinuxConfig.h" "src\LinuxConfig.h"
+
+src/common_tools.h: lwjgl3/modules/lwjgl/core/src/main/c/common_tools.h include/jni.h src/LinuxConfig.h
+	xcopy /o /x /y "lwjgl3\modules\lwjgl\core\src\main\c\common_tools.h" "src\common_tools.h"
+
+src/lwjgl_malloc.h: lwjgl3/modules/lwjgl/core/src/main/c/lwjgl_malloc.h
+	xcopy /o /x /y "lwjgl3\modules\lwjgl\core\src\main\c\lwjgl_malloc.h" "src\lwjgl_malloc.h"
+
+# LWJGL LZ4
+
+src/org_lwjgl_util_lz4_LibLZ4.c: lwjgl3/modules/lwjgl/lz4/src/generated/c/org_lwjgl_util_lz4_LibLZ4.c src/common_tools.h src/lwjgl_malloc.h
+	xcopy /o /x /y "lwjgl3\modules\lwjgl\lz4\src\generated\c\org_lwjgl_util_lz4_LibLZ4.c" "src\org_lwjgl_util_lz4_LibLZ4.c"
+
+src/org_lwjgl_util_lz4_LZ4.c: lwjgl3/modules/lwjgl/lz4/src/generated/c/org_lwjgl_util_lz4_LZ4.c src/common_tools.h src/lz4.h
+	xcopy /o /x /y "lwjgl3\modules\lwjgl\lz4\src\generated\c\org_lwjgl_util_lz4_LZ4.c" "src\org_lwjgl_util_lz4_LZ4.c"
+
+src/org_lwjgl_util_lz4_LZ4Frame.c: lwjgl3/modules/lwjgl/lz4/src/generated/c/org_lwjgl_util_lz4_LZ4Frame.c src/common_tools.h src/lz4frame.h
+	xcopy /o /x /y "lwjgl3\modules\lwjgl\lz4\src\generated\c\org_lwjgl_util_lz4_LZ4Frame.c" "src\org_lwjgl_util_lz4_LZ4Frame.c"
+
+src/org_lwjgl_util_lz4_LZ4HC.c: lwjgl3/modules/lwjgl/lz4/src/generated/c/org_lwjgl_util_lz4_LZ4HC.c src/common_tools.h src/lz4hc.h
+	xcopy /o /x /y "lwjgl3\modules\lwjgl\lz4\src\generated\c\org_lwjgl_util_lz4_LZ4HC.c" "src\org_lwjgl_util_lz4_LZ4HC.c"
+
+build/arm64-v8a/liblwjgl_lz4.so: $(SOURCES)
+	$(TOOLCHAIN)\$(CC_ARM64) $(CCFLAGS) -DLWJGL_LINUX -shared $** -fPIC -fvisibility=hidden -Wl,-soname=liblwjgl_lz4.so -o "build\arm64-v8a\liblwjgl_lz4.so"
+
+build/armeabi-v7a/liblwjgl_lz4.so: $(SOURCES)
+	$(TOOLCHAIN)\$(CC_ARMEABI) $(CCFLAGS) -DLWJGL_LINUX -shared $** -fPIC -fvisibility=hidden -Wl,-soname=liblwjgl_lz4.so -o "build\armeabi-v7a\liblwjgl_lz4.so"
+
+build/x86/liblwjgl_lz4.so: $(SOURCES)
+	$(TOOLCHAIN)\$(CC_X86_64) $(CCFLAGS) -DLWJGL_LINUX -shared $** -fPIC -fvisibility=hidden -Wl,-soname=liblwjgl_lz4.so -o "build\x86\liblwjgl_lz4.so"
+
+build/x86_64/liblwjgl_lz4.so: $(SOURCES)
+	$(TOOLCHAIN)\$(CC_I686) $(CCFLAGS) -DLWJGL_LINUX -shared $** -fPIC -fvisibility=hidden -Wl,-soname=liblwjgl_lz4.so -o "build\x86_64\liblwjgl_lz4.so"
