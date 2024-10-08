@@ -1,0 +1,91 @@
+CC=xcrun -sdk iphoneos clang
+CCFLAGS = -O3 -Wall -Wextra -Wcast-qual  -I ./include
+
+OBJECTS=build/xxhash.o build/lz4.o build/lz4frame.o build/lz4hc.o build/org_lwjgl_util_lz4_LZ4.o build/org_lwjgl_util_lz4_LZ4Frame.o build/org_lwjgl_util_lz4_LZ4HC.o
+
+all: ios
+
+ios: build/liblwjgl_lz4.a
+
+# LZ4
+
+src/lz4.h: lwjgl3/modules/lwjgl/lz4/src/main/c/lz4.h
+	ditto "lwjgl3/modules/lwjgl/lz4/src/main/c/lz4.h" $@
+
+src/lz4.c: lwjgl3/modules/lwjgl/lz4/src/main/c/lz4.c src/lz4.h
+	ditto "lwjgl3/modules/lwjgl/lz4/src/main/c/lz4.c" $@
+
+src/lz4hc.h: lwjgl3/modules/lwjgl/lz4/src/main/c/lz4hc.h src/lz4.h
+	ditto "lwjgl3/modules/lwjgl/lz4/src/main/c/lz4hc.h" $@
+
+src/lz4hc.c: lwjgl3/modules/lwjgl/lz4/src/main/c/lz4hc.c src/lz4hc.h
+	ditto "lwjgl3/modules/lwjgl/lz4/src/main/c/lz4hc.c" $@
+
+src/xxhash.h: lz4/lib/xxhash.h
+	ditto "lz4/lib/xxhash.h" $@
+
+src/xxhash.c: lz4/lib/xxhash.c
+	ditto "lz4/lib/xxhash.c" $@
+
+src/lz4frame.h: lwjgl3/modules/lwjgl/lz4/src/main/c/lz4frame.h
+	ditto "lwjgl3/modules/lwjgl/lz4/src/main/c/lz4frame.h" $@
+
+src/lz4frame.c: lwjgl3/modules/lwjgl/lz4/src/main/c/lz4frame.c src/lz4frame.h src/lz4.h src/lz4hc.h src/xxhash.h
+	ditto "lwjgl3/modules/lwjgl/lz4/src/main/c/lz4frame.c" $@
+
+# JNI
+
+include/jni_md.h: jdk/src/java.base/unix/native/include/jni_md.h 
+	ditto "jdk/src/java.base/unix/native/include/jni_md.h" $@
+
+include/jni.h: jdk/src/java.base/share/native/include/jni.h include/jni_md.h
+	ditto "jdk/src/java.base/share/native/include/jni.h" $@
+
+# LWJGL
+
+src/LinuxConfig.h: lwjgl3/modules/lwjgl/core/src/main/c/linux/LinuxConfig.h
+	ditto "lwjgl3/modules/lwjgl/core/src/main/c/linux/LinuxConfig.h" $@
+
+src/common_tools.h: lwjgl3/modules/lwjgl/core/src/main/c/common_tools.h include/jni.h src/LinuxConfig.h
+	ditto "lwjgl3/modules/lwjgl/core/src/main/c/common_tools.h" $@
+
+src/lwjgl_malloc.h: lwjgl3/modules/lwjgl/core/src/main/c/lwjgl_malloc.h
+	ditto "lwjgl3/modules/lwjgl/core/src/main/c/lwjgl_malloc.h" $@
+
+# LWJGL LZ4
+
+src/org_lwjgl_util_lz4_LibLZ4.c: lwjgl3/modules/lwjgl/lz4/src/generated/c/org_lwjgl_util_lz4_LibLZ4.c src/common_tools.h src/lwjgl_malloc.h
+	ditto "lwjgl3/modules/lwjgl/lz4/src/generated/c/org_lwjgl_util_lz4_LibLZ4.c" $@
+
+src/org_lwjgl_util_lz4_LZ4.c: lwjgl3/modules/lwjgl/lz4/src/generated/c/org_lwjgl_util_lz4_LZ4.c src/common_tools.h src/lz4.h
+	ditto "lwjgl3/modules/lwjgl/lz4/src/generated/c/org_lwjgl_util_lz4_LZ4.c" $@
+
+src/org_lwjgl_util_lz4_LZ4Frame.c: lwjgl3/modules/lwjgl/lz4/src/generated/c/org_lwjgl_util_lz4_LZ4Frame.c src/common_tools.h src/lz4frame.h
+	ditto "lwjgl3/modules/lwjgl/lz4/src/generated/c/org_lwjgl_util_lz4_LZ4Frame.c" $@
+
+src/org_lwjgl_util_lz4_LZ4HC.c: lwjgl3/modules/lwjgl/lz4/src/generated/c/org_lwjgl_util_lz4_LZ4HC.c src/common_tools.h src/lz4hc.h
+	ditto "lwjgl3/modules/lwjgl/lz4/src/generated/c/org_lwjgl_util_lz4_LZ4HC.c" $@
+
+build/arm64/%.o: src/%.c
+	$(CC) -arch arm64 $(CCFLAGS) -DLWJGL_LINUX -c $^ -o $@
+
+build/armv7/%.o: src/%.c
+	$(CC) -arch armv7 $(CCFLAGS) -DLWJGL_LINUX -c $^ -o $@
+
+build/armv7s/%.o: src/%.c
+	$(CC) -arch armv7s $(CCFLAGS) -DLWJGL_LINUX -c $^ -o $@
+
+build/arm64/liblwjgl_lz4.a: $(patsubst build/%,build/arm64/%,$(OBJECTS))
+	ar -rv $@ $^
+
+build/armv7/liblwjgl_lz4.a: $(patsubst build/%,build/armv7/%,$(OBJECTS))
+	ar -rv $@ $^
+
+build/armv7s/liblwjgl_lz4.a: $(patsubst build/%,build/armv7s/%,$(OBJECTS))
+	ar -rv $@ $^
+
+build/liblwjgl_lz4.a: build/arm64/liblwjgl_lz4.a build/armv7/liblwjgl_lz4.a build/armv7s/liblwjgl_lz4.a
+	lipo $^ -output $@ -create
+
+clean:
+	rm -rf build
